@@ -2,6 +2,8 @@ import sys
 import logging
 import copy
 import torch
+import glob
+import re
 from utils import model_factory
 from data.data_manager import DataManager
 from utils.toolkit import count_parameters
@@ -21,6 +23,29 @@ def RSIAT_train(args):
     avg_seed = sum_seed / len(seed_list)
     print('Average Seed Accuracy (CNN):', avg_seed)
     logging.info("Average Seed Accuracy (CNN): {}".format(avg_seed))
+
+def find_latest_checkpoint(checkpoint_dir):
+    """
+    Tìm file task_N.pkl có N lớn nhất.
+    """
+    checkpoint_files = glob.glob(
+        os.path.join(checkpoint_dir, "task_*.pkl")
+    )
+
+    if not checkpoint_files:
+        return None
+
+    def get_task_number(filepath):
+        filename = os.path.basename(filepath)
+        match = re.search(r"task_(\d+)\.pkl$", filename)
+
+        if match is None:
+            return -1
+
+        return int(match.group(1))
+
+    checkpoint_files.sort(key=get_task_number)
+    return checkpoint_files[-1]
 
 def _train(args):
 
@@ -60,9 +85,47 @@ def _train(args):
     )
     model = model_factory.get_model(args["model_name"], args)
 
-    print()    
-    cnn_curve, nme_curve = {"top1": [], "top5": []}, {"top1": [], "top5": []}
-    for task in range(data_manager.nb_tasks):
+    checkpoint_dir = os.path.join(
+        "ckpt",
+        str(args["prefix"]),
+        str(args["dataset"]),
+        "{}_{}".format(args["init_cls"], args["increment"]),
+    )
+
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
+    start_task = 0
+
+    # Có thể bật/tắt bằng "resume": true/false trong file config.
+    resume_enabled = args.get("resume", False)
+
+    if resume_enabled:
+        resume_path = args.get("resume_path")
+
+        # Nếu không chỉ định file cụ thể, tự tìm task_N.pkl mới nhất.
+        if not resume_path:
+            resume_path = find_latest_checkpoint(checkpoint_dir)
+
+        if resume_path and os.path.isfile(resume_path):
+            completed_task = model.load_checkpoint(resume_path)
+            start_task = completed_task + 1
+
+            logging.info(
+                "Resuming experiment from task %d",
+                start_task,
+            )
+        else:
+            logging.info(
+                "Resume enabled but no checkpoint was found. "
+                "Starting from task 0."
+            )
+
+    print()
+
+    cnn_curve = {"top1": [], "top5": []}
+    nme_curve = {"top1": [], "top5": []}
+
+    for task in range(start_task, data_manager.nb_tasks):
         logging.info("All params: {}".format(count_parameters(model._network)))
         logging.info(
             "Trainable params: {}".format(count_parameters(model._network, True))
@@ -71,13 +134,13 @@ def _train(args):
         model.incremental_train(data_manager)
         cnn_accy = model.eval_task()
         model.after_task()
-        
-        # save_path_base = f"ckpt/{args['prefix']}/{args['dataset']}/{args['init_cls']}_{args['increment']}"
-        # if not os.path.exists(save_path_base):
-        #     os.makedirs(save_path_base)
-        # save_path = f"ckpt/{args['prefix']}/{args['dataset']}/{args['init_cls']}_{args['increment']}/task_{task}.pth"
-        # torch.save(model._network.state_dict(), save_path)
-        # logging.info(f"Saved model checkpoint: {save_path}")
+
+        checkpoint_path = os.path.join(
+        checkpoint_dir,
+            "task_{}.pkl".format(task),
+        )
+
+        model.save_checkpoint(checkpoint_path)
      
         logging.info("CNN: {}".format(cnn_accy["grouped"]))
 

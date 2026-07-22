@@ -35,8 +35,30 @@ class Learner(BaseLearner):
 
         self.logit_norm = None
         self.tuned_epochs = None
+        self.task_sizes = []
         self.rs_loss_func = RS_Loss(self.args["alpha"], self.args["rs_margin"])
         self.old_ae = None
+
+    def _after_load_checkpoint(self, checkpoint):
+        if self._cur_task >= 1:
+            self.old_ae = AutoencoderSigmoid(
+                input_dims=768,
+                code_dims=self.args["ae_code_dims"],
+            )
+            if "old_ae_state_dict" in checkpoint:
+                self.old_ae.load_state_dict(checkpoint["old_ae_state_dict"])
+            else:
+                logging.warning(
+                    "Checkpoint has no old_ae_state_dict. "
+                    "Resume will use a freshly initialized autoencoder."
+                )
+            self.old_ae.to(self._device)
+
+        self._network_module_ptr = self._network
+        if hasattr(self._old_network, "module"):
+            self.old_network_module_ptr = self._old_network.module
+        else:
+            self.old_network_module_ptr = self._old_network
 
     def after_task(self):
         self._known_classes = self._total_classes
@@ -71,9 +93,11 @@ class Learner(BaseLearner):
             self.old_ae = AutoencoderSigmoid(input_dims=768, code_dims=self.args["ae_code_dims"])
             self.old_ae.to(self._device)
             
-        self._total_classes = self._known_classes + data_manager.get_task_size(self._cur_task)
+        task_size = data_manager.get_task_size(self._cur_task)
+        self.task_sizes.append(task_size)
+        self._total_classes = self._known_classes + task_size
         # self._network.update_fc(data_manager.get_task_size(self._cur_task)*4)
-        self._network.update_fc(data_manager.get_task_size(self._cur_task))
+        self._network.update_fc(task_size)
         self._network_module_ptr = self._network
         logging.info("Learning on {}-{}".format(self._known_classes, self._total_classes))
     
@@ -113,8 +137,6 @@ class Learner(BaseLearner):
 
         self._network.fc.backup()
         self._compute_class_mean(data_manager, check_diff=False, oracle=False)
-        task_size = data_manager.get_task_size(self._cur_task)
-
         if self._cur_task>0 and self.args['ca_epochs']>0 and self.args['ca'] is True:
             self._stage2_compact_classifier(task_size, self.args['ca_epochs'])
             if len(self._multiple_gpus) > 1:
