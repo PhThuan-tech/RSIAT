@@ -122,8 +122,17 @@ def _train(args):
 
     print()
 
-    cnn_curve = {"top1": [], "top5": []}
-    nme_curve = {"top1": [], "top5": []}
+    cnn_curve = getattr(model, "cnn_curve", {"top1": [], "top5": []})
+    nme_curve = getattr(model, "nme_curve", {"top1": [], "top5": []})
+
+    if start_task >= data_manager.nb_tasks:
+        if cnn_curve["top1"]:
+            avg_acc = sum(cnn_curve["top1"]) / len(cnn_curve["top1"])
+            logging.info("All tasks already completed. Average Accuracy (CNN): {}".format(avg_acc))
+            return avg_acc
+
+        logging.info("All tasks already completed, but no CNN curve was found.")
+        return 0.0
 
     for task in range(start_task, data_manager.nb_tasks):
         logging.info("All params: {}".format(count_parameters(model._network)))
@@ -135,17 +144,19 @@ def _train(args):
         cnn_accy = model.eval_task()
         model.after_task()
 
+        logging.info("CNN: {}".format(cnn_accy["grouped"]))
+
+        cnn_curve["top1"].append(cnn_accy["top1"])
+        cnn_curve["top5"].append(cnn_accy["top5"])
+        model.cnn_curve = cnn_curve
+        model.nme_curve = nme_curve
+
         checkpoint_path = os.path.join(
         checkpoint_dir,
             "task_{}.pkl".format(task),
         )
 
         model.save_checkpoint(checkpoint_path)
-     
-        logging.info("CNN: {}".format(cnn_accy["grouped"]))
-
-        cnn_curve["top1"].append(cnn_accy["top1"])
-        cnn_curve["top5"].append(cnn_accy["top5"])
 
 
         logging.info("CNN top1 curve: {}".format(cnn_curve["top1"]))

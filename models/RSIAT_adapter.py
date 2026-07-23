@@ -183,6 +183,7 @@ class Learner(BaseLearner):
 
     def _init_train(self, train_loader, test_loader, optimizer, scheduler, warmup_epoch):
         prog_bar = tqdm(range(self.tuned_epochs))
+        eval_interval = self.args.get("eval_interval", 0)
         
         for _, epoch in enumerate(prog_bar):
             self._network.train()
@@ -206,8 +207,13 @@ class Learner(BaseLearner):
             scheduler.step()
 
             train_acc = np.around(tensor2numpy(correct) * 100 / total, decimals=2)
-            test_acc = self._compute_accuracy(self._network, test_loader)
-            info = "Task {}, Epoch {}/{} => Loss {:.3f}, Loss_c {:.3f}, Losses_rt {:.3f}, Train_accy {:.2f}, Test_accy {:.2f}".format(
+            if self._should_eval_epoch(epoch, self.tuned_epochs, eval_interval):
+                test_acc = self._compute_accuracy(self._network, test_loader)
+                test_acc_msg = "{:.2f}".format(test_acc)
+            else:
+                test_acc_msg = "-"
+
+            info = "Task {}, Epoch {}/{} => Loss {:.3f}, Loss_c {:.3f}, Losses_rt {:.3f}, Train_accy {:.2f}, Test_accy {}".format(
                 self._cur_task,
                 epoch + 1,
                 self.tuned_epochs,
@@ -215,7 +221,7 @@ class Learner(BaseLearner):
                 losses_c/len(train_loader),
                 losses_rt/len(train_loader),
                 train_acc,
-                test_acc,
+                test_acc_msg,
             )
             prog_bar.set_description(info)
         logging.info(info)

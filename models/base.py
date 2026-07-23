@@ -82,6 +82,7 @@ class BaseLearner(object):
             self._network = nn.DataParallel(self._network, self._multiple_gpus)
 
         self._network.eval()
+        eval_interval = self.args.get("ca_eval_interval", 0)
 
         for epoch in range(run_epochs):
             losses = 0.0
@@ -152,11 +153,18 @@ class BaseLearner(object):
                 losses += loss.item()
 
             scheduler.step()
-            test_acc = self._compute_accuracy(self._network, self.test_loader)
-            info = "CA Task {} => Loss {:.3f}, Test_accy {:.3f}".format(
+            if self._should_eval_epoch(epoch, run_epochs, eval_interval):
+                test_acc = self._compute_accuracy(self._network, self.test_loader)
+                test_acc_msg = "{:.3f}".format(test_acc)
+            else:
+                test_acc_msg = "-"
+
+            info = "CA Task {} => Epoch {}/{} Loss {:.3f}, Test_accy {}".format(
                 self._cur_task,
+                epoch + 1,
+                run_epochs,
                 losses / self._total_classes,
-                test_acc,
+                test_acc_msg,
             )
             logging.info(info)
 
@@ -232,6 +240,15 @@ class BaseLearner(object):
         network.fc = None
         for task_size in task_sizes:
             network.update_fc(task_size)
+
+    def _should_eval_epoch(self, epoch, total_epochs, interval):
+        if epoch == total_epochs - 1:
+            return True
+
+        if interval is None or interval <= 0:
+            return False
+
+        return (epoch + 1) % interval == 0
 
     def load_checkpoint(self, filepath):
         try:
