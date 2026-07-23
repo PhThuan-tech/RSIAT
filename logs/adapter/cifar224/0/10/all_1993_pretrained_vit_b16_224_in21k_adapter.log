@@ -687,3 +687,173 @@
 2026-07-23 11:16:02,003 [RSIAT_adapter.py] => Learning on 40-50
 2026-07-23 11:17:35,569 [toolkit.py] => All params: 87158912
 2026-07-23 11:17:35,571 [toolkit.py] => Trainable params: 1360256
+2026-07-23 13:54:30,641 [trainer.py] => config: .\exps\adapter_cifar224.json
+2026-07-23 13:54:30,643 [trainer.py] => prefix: all
+2026-07-23 13:54:30,643 [trainer.py] => dataset: cifar224
+2026-07-23 13:54:30,644 [trainer.py] => resume: True
+2026-07-23 13:54:30,644 [trainer.py] => shuffle: True
+2026-07-23 13:54:30,645 [trainer.py] => ssca: True
+2026-07-23 13:54:30,645 [trainer.py] => ca: True
+2026-07-23 13:54:30,645 [trainer.py] => init_cls: 10
+2026-07-23 13:54:30,646 [trainer.py] => increment: 10
+2026-07-23 13:54:30,646 [trainer.py] => model_name: adapter
+2026-07-23 13:54:30,646 [trainer.py] => convnet_type: pretrained_vit_b16_224_in21k_adapter
+2026-07-23 13:54:30,647 [trainer.py] => device: [device(type='cuda', index=0)]
+2026-07-23 13:54:30,647 [trainer.py] => seed: 1993
+2026-07-23 13:54:30,647 [trainer.py] => init_epochs: 10
+2026-07-23 13:54:30,648 [trainer.py] => warmup_epoch: 7
+2026-07-23 13:54:30,648 [trainer.py] => inc_epochs: 30
+2026-07-23 13:54:30,648 [trainer.py] => ca_epochs: 10
+2026-07-23 13:54:30,648 [trainer.py] => eval_interval: 0
+2026-07-23 13:54:30,649 [trainer.py] => ca_eval_interval: 0
+2026-07-23 13:54:30,649 [trainer.py] => init_lr: 0.018461273665041644
+2026-07-23 13:54:30,649 [trainer.py] => batch_size: 64
+2026-07-23 13:54:30,649 [trainer.py] => weight_decay: 0.0001714081878951529
+2026-07-23 13:54:30,650 [trainer.py] => min_lr: 0
+2026-07-23 13:54:30,650 [trainer.py] => ffn_num: 64
+2026-07-23 13:54:30,651 [trainer.py] => optimizer: sgd
+2026-07-23 13:54:30,652 [trainer.py] => scale: 40.0
+2026-07-23 13:54:30,652 [trainer.py] => margin: 0.1
+2026-07-23 13:54:30,653 [trainer.py] => alpha: 0.5
+2026-07-23 13:54:30,653 [trainer.py] => rs_margin: 0.3
+2026-07-23 13:54:30,653 [trainer.py] => lambda_rs: 0.2
+2026-07-23 13:54:30,654 [trainer.py] => beta: 1.0
+2026-07-23 13:54:30,654 [trainer.py] => gamma: 0.4
+2026-07-23 13:54:30,654 [trainer.py] => ae_code_dims: 256
+2026-07-23 13:54:30,655 [trainer.py] => ae_init_lr: 0.0005611742230603744
+2026-07-23 13:54:30,655 [trainer.py] => ae_weight_decay: 0.0029339295871570244
+2026-07-23 13:54:32,923 [data_manager.py] => [68, 56, 78, 8, 23, 84, 90, 65, 74, 76, 40, 89, 3, 92, 55, 9, 26, 80, 43, 38, 58, 70, 77, 1, 85, 19, 17, 50, 28, 53, 13, 81, 45, 82, 6, 59, 83, 16, 15, 44, 91, 41, 72, 60, 79, 52, 20, 10, 31, 54, 37, 95, 14, 71, 96, 98, 97, 2, 64, 66, 42, 22, 35, 86, 24, 34, 87, 21, 99, 0, 88, 27, 18, 94, 11, 12, 47, 25, 30, 46, 62, 69, 36, 61, 7, 63, 75, 5, 32, 4, 51, 48, 73, 93, 39, 67, 29, 49, 57, 33]
+2026-07-23 13:54:42,240 [base.py] => Loaded checkpoint ckpt\all\cifar224\10_10\task_3.pkl; completed task=3, known_classes=40, total_classes=40
+2026-07-23 13:54:42,248 [trainer.py] => Restored CNN curve from log: top1=[99.0, 97.6, 96.9, 96.18]
+2026-07-23 13:54:42,249 [trainer.py] => Restored CNN top5 curve from log: top5=[100.0, 99.7, 99.63, 99.6]
+2026-07-23 13:54:42,249 [trainer.py] => Resuming experiment from task 4
+2026-07-23 13:54:42,251 [trainer.py] => All params: 87019008
+2026-07-23 13:54:42,253 [trainer.py] => Trainable params: 1220352
+2026-07-23 13:54:42,254 [RSIAT_adapter.py] => Learning on 40-50
+2026-07-23 13:56:31,765 [toolkit.py] => All params: 87158912
+2026-07-23 13:56:31,765 [toolkit.py] => Trainable params: 1360256
+2026-07-23 15:23:23,762 [RSIAT_adapter.py] => Task 4, Epoch 30/30 => Loss 0.771, Loss_c 0.419, Losses_rt 0.352, Train_accy 87.18, Test_accy 94.82
+2026-07-23 15:30:22,294 [base.py] => CA Task 4 => Epoch 1/10 Loss 0.043, Test_accy -
+2026-07-23 15:30:22,981 [base.py] => CA Task 4 => Epoch 2/10 Loss 0.039, Test_accy -
+2026-07-23 15:30:23,666 [base.py] => CA Task 4 => Epoch 3/10 Loss 0.039, Test_accy -
+2026-07-23 15:30:24,269 [base.py] => CA Task 4 => Epoch 4/10 Loss 0.036, Test_accy -
+2026-07-23 15:30:24,894 [base.py] => CA Task 4 => Epoch 5/10 Loss 0.034, Test_accy -
+2026-07-23 15:30:25,569 [base.py] => CA Task 4 => Epoch 6/10 Loss 0.038, Test_accy -
+2026-07-23 15:30:26,297 [base.py] => CA Task 4 => Epoch 7/10 Loss 0.036, Test_accy -
+2026-07-23 15:30:26,924 [base.py] => CA Task 4 => Epoch 8/10 Loss 0.033, Test_accy -
+2026-07-23 15:30:27,637 [base.py] => CA Task 4 => Epoch 9/10 Loss 0.036, Test_accy -
+2026-07-23 15:32:02,901 [base.py] => CA Task 4 => Epoch 10/10 Loss 0.033, Test_accy 95.220
+2026-07-23 15:33:32,900 [trainer.py] => CNN: {'total': 95.22, '00-09': 96.0, '10-19': 93.5, '20-29': 96.5, '30-39': 95.1, '40-49': 95.0, 'old': 95.28, 'new': 95.0}
+2026-07-23 15:33:33,891 [base.py] => Saved checkpoint: ckpt\all\cifar224\10_10\task_4.pkl
+2026-07-23 15:33:33,919 [trainer.py] => CNN top1 curve: [99.0, 97.6, 96.9, 96.18, 95.22]
+2026-07-23 15:33:33,919 [trainer.py] => CNN top5 curve: [100.0, 99.7, 99.63, 99.6, 99.5]
+2026-07-23 15:33:33,919 [trainer.py] => Average Accuracy (CNN): 96.97999999999999
+2026-07-23 15:33:33,921 [trainer.py] => All params: 87026688
+2026-07-23 15:33:33,923 [trainer.py] => Trainable params: 1228032
+2026-07-23 15:33:33,977 [RSIAT_adapter.py] => Learning on 50-60
+2026-07-23 15:35:09,781 [toolkit.py] => All params: 87166592
+2026-07-23 15:35:09,782 [toolkit.py] => Trainable params: 1367936
+2026-07-23 17:08:30,038 [RSIAT_adapter.py] => Task 5, Epoch 30/30 => Loss 0.917, Loss_c 0.552, Losses_rt 0.365, Train_accy 85.80, Test_accy 94.35
+2026-07-23 17:15:37,035 [base.py] => CA Task 5 => Epoch 1/10 Loss 0.050, Test_accy -
+2026-07-23 17:15:38,218 [base.py] => CA Task 5 => Epoch 2/10 Loss 0.042, Test_accy -
+2026-07-23 17:15:39,355 [base.py] => CA Task 5 => Epoch 3/10 Loss 0.046, Test_accy -
+2026-07-23 17:15:40,584 [base.py] => CA Task 5 => Epoch 4/10 Loss 0.042, Test_accy -
+2026-07-23 17:15:41,761 [base.py] => CA Task 5 => Epoch 5/10 Loss 0.043, Test_accy -
+2026-07-23 17:15:42,934 [base.py] => CA Task 5 => Epoch 6/10 Loss 0.040, Test_accy -
+2026-07-23 17:15:44,040 [base.py] => CA Task 5 => Epoch 7/10 Loss 0.041, Test_accy -
+2026-07-23 17:15:45,163 [base.py] => CA Task 5 => Epoch 8/10 Loss 0.038, Test_accy -
+2026-07-23 17:15:46,302 [base.py] => CA Task 5 => Epoch 9/10 Loss 0.039, Test_accy -
+2026-07-23 17:17:25,818 [base.py] => CA Task 5 => Epoch 10/10 Loss 0.036, Test_accy 94.320
+2026-07-23 17:19:04,909 [trainer.py] => CNN: {'total': 94.32, '00-09': 94.6, '10-19': 93.3, '20-29': 96.0, '30-39': 94.2, '40-49': 93.9, '50-59': 93.9, 'old': 94.4, 'new': 93.9}
+2026-07-23 17:19:07,705 [base.py] => Saved checkpoint: ckpt\all\cifar224\10_10\task_5.pkl
+2026-07-23 17:19:07,707 [trainer.py] => CNN top1 curve: [99.0, 97.6, 96.9, 96.18, 95.22, 94.32]
+2026-07-23 17:19:07,707 [trainer.py] => CNN top5 curve: [100.0, 99.7, 99.63, 99.6, 99.5, 99.5]
+2026-07-23 17:19:07,707 [trainer.py] => Average Accuracy (CNN): 96.53666666666668
+2026-07-23 17:19:07,708 [trainer.py] => All params: 87034368
+2026-07-23 17:19:07,711 [trainer.py] => Trainable params: 1235712
+2026-07-23 17:19:07,723 [RSIAT_adapter.py] => Learning on 60-70
+2026-07-23 17:20:44,866 [toolkit.py] => All params: 87174272
+2026-07-23 17:20:44,866 [toolkit.py] => Trainable params: 1375616
+2026-07-23 18:21:45,880 [trainer.py] => config: .\exps\adapter_cifar224.json
+2026-07-23 18:21:45,881 [trainer.py] => prefix: all
+2026-07-23 18:21:45,881 [trainer.py] => dataset: cifar224
+2026-07-23 18:21:45,881 [trainer.py] => resume: True
+2026-07-23 18:21:45,882 [trainer.py] => shuffle: True
+2026-07-23 18:21:45,882 [trainer.py] => ssca: True
+2026-07-23 18:21:45,882 [trainer.py] => ca: True
+2026-07-23 18:21:45,882 [trainer.py] => init_cls: 10
+2026-07-23 18:21:45,883 [trainer.py] => increment: 10
+2026-07-23 18:21:45,883 [trainer.py] => model_name: adapter
+2026-07-23 18:21:45,883 [trainer.py] => convnet_type: pretrained_vit_b16_224_in21k_adapter
+2026-07-23 18:21:45,884 [trainer.py] => device: [device(type='cuda', index=0)]
+2026-07-23 18:21:45,884 [trainer.py] => seed: 1993
+2026-07-23 18:21:45,884 [trainer.py] => init_epochs: 10
+2026-07-23 18:21:45,885 [trainer.py] => warmup_epoch: 7
+2026-07-23 18:21:45,885 [trainer.py] => inc_epochs: 30
+2026-07-23 18:21:45,885 [trainer.py] => ca_epochs: 10
+2026-07-23 18:21:45,885 [trainer.py] => eval_interval: 0
+2026-07-23 18:21:45,886 [trainer.py] => ca_eval_interval: 0
+2026-07-23 18:21:45,886 [trainer.py] => init_lr: 0.018461273665041644
+2026-07-23 18:21:45,886 [trainer.py] => batch_size: 64
+2026-07-23 18:21:45,887 [trainer.py] => weight_decay: 0.0001714081878951529
+2026-07-23 18:21:45,887 [trainer.py] => min_lr: 0
+2026-07-23 18:21:45,887 [trainer.py] => ffn_num: 64
+2026-07-23 18:21:45,888 [trainer.py] => optimizer: sgd
+2026-07-23 18:21:45,888 [trainer.py] => scale: 40.0
+2026-07-23 18:21:45,888 [trainer.py] => margin: 0.1
+2026-07-23 18:21:45,888 [trainer.py] => alpha: 0.5
+2026-07-23 18:21:45,889 [trainer.py] => rs_margin: 0.3
+2026-07-23 18:21:45,889 [trainer.py] => lambda_rs: 0.2
+2026-07-23 18:21:45,889 [trainer.py] => beta: 1.0
+2026-07-23 18:21:45,890 [trainer.py] => gamma: 0.4
+2026-07-23 18:21:45,890 [trainer.py] => ae_code_dims: 256
+2026-07-23 18:21:45,890 [trainer.py] => ae_init_lr: 0.0005611742230603744
+2026-07-23 18:21:45,890 [trainer.py] => ae_weight_decay: 0.0029339295871570244
+2026-07-23 18:21:47,996 [data_manager.py] => [68, 56, 78, 8, 23, 84, 90, 65, 74, 76, 40, 89, 3, 92, 55, 9, 26, 80, 43, 38, 58, 70, 77, 1, 85, 19, 17, 50, 28, 53, 13, 81, 45, 82, 6, 59, 83, 16, 15, 44, 91, 41, 72, 60, 79, 52, 20, 10, 31, 54, 37, 95, 14, 71, 96, 98, 97, 2, 64, 66, 42, 22, 35, 86, 24, 34, 87, 21, 99, 0, 88, 27, 18, 94, 11, 12, 47, 25, 30, 46, 62, 69, 36, 61, 7, 63, 75, 5, 32, 4, 51, 48, 73, 93, 39, 67, 29, 49, 57, 33]
+2026-07-23 18:21:54,274 [base.py] => Loaded checkpoint ckpt\all\cifar224\10_10\task_5.pkl; completed task=5, known_classes=60, total_classes=60
+2026-07-23 18:21:54,282 [trainer.py] => Resuming experiment from task 6
+2026-07-23 18:21:54,285 [trainer.py] => All params: 87034368
+2026-07-23 18:21:54,287 [trainer.py] => Trainable params: 1235712
+2026-07-23 18:21:54,290 [RSIAT_adapter.py] => Learning on 60-70
+2026-07-23 18:23:46,823 [toolkit.py] => All params: 87174272
+2026-07-23 18:23:46,823 [toolkit.py] => Trainable params: 1375616
+2026-07-23 19:46:08,725 [RSIAT_adapter.py] => Task 6, Epoch 30/30 => Loss 0.757, Loss_c 0.406, Losses_rt 0.351, Train_accy 88.44, Test_accy 93.79
+2026-07-23 19:53:04,400 [base.py] => CA Task 6 => Epoch 1/10 Loss 0.049, Test_accy -
+2026-07-23 19:53:05,956 [base.py] => CA Task 6 => Epoch 2/10 Loss 0.048, Test_accy -
+2026-07-23 19:53:07,401 [base.py] => CA Task 6 => Epoch 3/10 Loss 0.045, Test_accy -
+2026-07-23 19:53:08,792 [base.py] => CA Task 6 => Epoch 4/10 Loss 0.043, Test_accy -
+2026-07-23 19:53:10,137 [base.py] => CA Task 6 => Epoch 5/10 Loss 0.043, Test_accy -
+2026-07-23 19:53:11,533 [base.py] => CA Task 6 => Epoch 6/10 Loss 0.042, Test_accy -
+2026-07-23 19:53:12,923 [base.py] => CA Task 6 => Epoch 7/10 Loss 0.040, Test_accy -
+2026-07-23 19:53:14,376 [base.py] => CA Task 6 => Epoch 8/10 Loss 0.041, Test_accy -
+2026-07-23 19:53:15,728 [base.py] => CA Task 6 => Epoch 9/10 Loss 0.041, Test_accy -
+2026-07-23 19:55:08,454 [base.py] => CA Task 6 => Epoch 10/10 Loss 0.040, Test_accy 94.100
+2026-07-23 19:56:59,105 [trainer.py] => CNN: {'total': 94.1, '00-09': 94.2, '10-19': 93.1, '20-29': 95.5, '30-39': 94.1, '40-49': 93.6, '50-59': 92.7, '60-69': 95.5, 'old': 93.87, 'new': 95.5}
+2026-07-23 19:57:00,187 [base.py] => Saved checkpoint: ckpt\all\cifar224\10_10\task_6.pkl
+2026-07-23 19:57:00,194 [trainer.py] => CNN top1 curve: [99.0, 97.6, 96.9, 96.18, 95.22, 94.32, 94.1]
+2026-07-23 19:57:00,194 [trainer.py] => CNN top5 curve: [100.0, 99.7, 99.63, 99.6, 99.5, 99.5, 99.47]
+2026-07-23 19:57:00,195 [trainer.py] => Average Accuracy (CNN): 96.18857142857144
+2026-07-23 19:57:00,196 [trainer.py] => All params: 87042048
+2026-07-23 19:57:00,198 [trainer.py] => Trainable params: 1243392
+2026-07-23 19:57:00,201 [RSIAT_adapter.py] => Learning on 70-80
+2026-07-23 19:58:37,701 [toolkit.py] => All params: 87181952
+2026-07-23 19:58:37,701 [toolkit.py] => Trainable params: 1383296
+2026-07-23 21:22:56,982 [RSIAT_adapter.py] => Task 7, Epoch 30/30 => Loss 0.905, Loss_c 0.552, Losses_rt 0.353, Train_accy 77.52, Test_accy 92.01
+2026-07-23 21:29:57,726 [base.py] => CA Task 7 => Epoch 1/10 Loss 0.075, Test_accy -
+2026-07-23 21:29:59,215 [base.py] => CA Task 7 => Epoch 2/10 Loss 0.072, Test_accy -
+2026-07-23 21:30:00,665 [base.py] => CA Task 7 => Epoch 3/10 Loss 0.068, Test_accy -
+2026-07-23 21:30:02,046 [base.py] => CA Task 7 => Epoch 4/10 Loss 0.068, Test_accy -
+2026-07-23 21:30:03,444 [base.py] => CA Task 7 => Epoch 5/10 Loss 0.067, Test_accy -
+2026-07-23 21:30:04,831 [base.py] => CA Task 7 => Epoch 6/10 Loss 0.061, Test_accy -
+2026-07-23 21:30:06,201 [base.py] => CA Task 7 => Epoch 7/10 Loss 0.059, Test_accy -
+2026-07-23 21:30:07,515 [base.py] => CA Task 7 => Epoch 8/10 Loss 0.062, Test_accy -
+2026-07-23 21:30:08,811 [base.py] => CA Task 7 => Epoch 9/10 Loss 0.061, Test_accy -
+2026-07-23 21:31:55,555 [base.py] => CA Task 7 => Epoch 10/10 Loss 0.064, Test_accy 92.580
+2026-07-23 21:33:48,970 [trainer.py] => CNN: {'total': 92.58, '00-09': 93.1, '10-19': 92.7, '20-29': 95.4, '30-39': 94.1, '40-49': 91.6, '50-59': 90.4, '60-69': 94.4, '70-79': 88.9, 'old': 93.1, 'new': 88.9}
+2026-07-23 21:33:50,082 [base.py] => Saved checkpoint: ckpt\all\cifar224\10_10\task_7.pkl
+2026-07-23 21:33:50,084 [trainer.py] => CNN top1 curve: [99.0, 97.6, 96.9, 96.18, 95.22, 94.32, 94.1, 92.58]
+2026-07-23 21:33:50,084 [trainer.py] => CNN top5 curve: [100.0, 99.7, 99.63, 99.6, 99.5, 99.5, 99.47, 99.44]
+2026-07-23 21:33:50,084 [trainer.py] => Average Accuracy (CNN): 95.73750000000001
+2026-07-23 21:33:50,086 [trainer.py] => All params: 87049728
+2026-07-23 21:33:50,087 [trainer.py] => Trainable params: 1251072
+2026-07-23 21:33:50,089 [RSIAT_adapter.py] => Learning on 80-90
