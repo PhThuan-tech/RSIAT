@@ -4,6 +4,7 @@ import copy
 import torch
 import glob
 import re
+import ast
 from utils import model_factory
 from data.data_manager import DataManager
 from utils.toolkit import count_parameters
@@ -46,6 +47,84 @@ def find_latest_checkpoint(checkpoint_dir):
 
     checkpoint_files.sort(key=get_task_number)
     return checkpoint_files[-1]
+
+def get_task_id_from_range(class_start, init_cls, increment):
+    if class_start == 0:
+        return 0
+
+    return 1 + ((class_start - init_cls) // increment)
+
+def restore_curve_from_log(log_path, completed_task, init_cls, increment):
+    expected_len = completed_task + 1
+    top1_by_task = {}
+    top5_by_task = {}
+    current_task = None
+
+    if not os.path.isfile(log_path):
+        return {"top1": [], "top5": []}
+
+    learning_pattern = re.compile(r"Learning on\s+(\d+)-(\d+)")
+    cnn_pattern = re.compile(r"CNN:\s*(\{.*\})")
+    top5_pattern = re.compile(r"CNN top5 curve:\s*(\[.*\])")
+
+    with open(log_path, "r", encoding="utf-8", errors="ignore") as log_file:
+        for line in log_file:
+            learning_match = learning_pattern.search(line)
+            if learning_match:
+                class_start = int(learning_match.group(1))
+                current_task = get_task_id_from_range(class_start, init_cls, increment)
+                continue
+
+            if current_task is None or current_task > completed_task:
+                continue
+
+            cnn_match = cnn_pattern.search(line)
+            if cnn_match:
+                cnn_accy = ast.literal_eval(cnn_match.group(1))
+                top1_by_task[current_task] = cnn_accy["total"]
+                continue
+
+            top5_match = top5_pattern.search(line)
+            if top5_match:
+                curve = ast.literal_eval(top5_match.group(1))
+                if curve:
+                    top5_by_task[current_task] = curve[-1]
+
+    if not all(task in top1_by_task for task in range(expected_len)):
+        top1_curve = []
+    else:
+        top1_curve = [top1_by_task[task] for task in range(expected_len)]
+
+    if not all(task in top5_by_task for task in range(expected_len)):
+        top5_curve = []
+    else:
+        top5_curve = [top5_by_task[task] for task in range(expected_len)]
+
+    return {"top1": top1_curve, "top5": top5_curve}
+
+def complete_curve_from_log(cnn_curve, log_path, completed_task, init_cls, increment):
+    expected_len = completed_task + 1
+    if len(cnn_curve["top1"]) >= expected_len and len(cnn_curve["top5"]) >= expected_len:
+        return cnn_curve
+
+    restored_curve = restore_curve_from_log(
+        log_path,
+        completed_task,
+        init_cls,
+        increment,
+    )
+
+    if len(restored_curve["top1"]) == expected_len:
+        cnn_curve["top1"] = restored_curve["top1"]
+
+    if len(restored_curve["top5"]) == expected_len:
+        cnn_curve["top5"] = restored_curve["top5"]
+
+    if len(cnn_curve["top1"]) >= expected_len and len(cnn_curve["top5"]) >= expected_len:
+        logging.info("Restored CNN curve from log: top1=%s", cnn_curve["top1"])
+        logging.info("Restored CNN top5 curve from log: top5=%s", cnn_curve["top5"])
+
+    return cnn_curve
 
 def _train(args):
 
@@ -109,6 +188,13 @@ def _train(args):
         if resume_path and os.path.isfile(resume_path):
             completed_task = model.load_checkpoint(resume_path)
             start_task = completed_task + 1
+            model.cnn_curve = complete_curve_from_log(
+                getattr(model, "cnn_curve", {"top1": [], "top5": []}),
+                logfilename + ".log",
+                completed_task,
+                args["init_cls"],
+                args["increment"],
+            )
 
             logging.info(
                 "Resuming experiment from task %d",
