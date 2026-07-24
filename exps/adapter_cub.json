@@ -1,6 +1,7 @@
 {
     "prefix": "all",
     "dataset": "cub",
+    "resume": true,
     "shuffle": true,
     "ssca": true,
     "ca": true,
