@@ -16,6 +16,8 @@
     "warmup_epoch":9,
     "inc_epochs": 30,
     "ca_epochs": 10,
+    "eval_interval": 0,
+    "ca_eval_interval": 0,
     "init_lr": 0.03773856474362839,
     "batch_size": 128,
     "weight_decay": 3.425582163491081e-06,
