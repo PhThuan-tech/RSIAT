@@ -160,6 +160,52 @@ For a quick smoke test on CIFAR-100, use:
 python main.py --config ./exps/adapter_cifar224_smoke.json
 ```
 
+## UMT-RSIAT Research Variant
+
+The repository also includes an experimental variant with a weakly nonlinear
+low-rank projector, class-wise mean/diagonal-variance alignment, adaptive
+top-K separation, and projector-based transport of old class statistics.
+
+Run its lightweight integration check first:
+
+```bash
+python -m unittest tests.test_research_components
+python main.py --config ./exps/umt_adapter_cifar224_smoke.json
+```
+
+Run the three-order CIFAR-100 experiment with:
+
+```bash
+python main.py --config ./exps/umt_adapter_cifar224.json
+```
+
+After preparing ImageNet-R in the layout documented above, run:
+
+```bash
+python main.py --config ./exps/umt_adapter_imagenetr.json
+```
+
+Research checkpoints are isolated by seed under
+`ckpt/umt_weak_moment_topk/cifar224/10_10/seed_<seed>/`. Set `resume` to
+`true` only when continuing an experiment with the same method and seed.
+The supplied research configs keep only the latest task checkpoint per seed to
+avoid filling Google Drive. Set `keep_last_checkpoint` to `false` if every
+task checkpoint is needed for offline diagnostics.
+
+The full-covariance checkpoint format is retained for baseline compatibility.
+When `statistics_transport` is `diagonal_mc`, old Gaussian statistics are
+transported by Monte Carlo samples and stored as diagonal covariance matrices.
+Research configs save only the diagonal through `compact_diagonal_checkpoint`
+to substantially reduce checkpoint size.
+A ready-to-run Google Colab workflow is available in
+`RSIAT_UMT_Colab.ipynb`.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PhThuan-tech/RSIAT/blob/main/RSIAT_UMT_Colab.ipynb)
+
+The optional `output_root` config key redirects `logs/` and `ckpt/` to another
+location; the Colab notebook uses it to persist outputs on Google Drive while
+training from Colab's faster local disk.
+
 The smoke config uses fewer epochs and a smaller batch size, so it is useful for checking that the environment, CUDA, model loading, and data pipeline work before running the full reproduction.
 
 ## GPU Selection

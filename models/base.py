@@ -189,10 +189,20 @@ class BaseLearner(object):
             checkpoint["class_means"] = torch.as_tensor(self._class_means).cpu()
 
         if hasattr(self, "_class_covs") and self._class_covs is not None:
-            checkpoint["class_covs"] = self._class_covs.detach().cpu()
+            if self.args.get("compact_diagonal_checkpoint", False):
+                checkpoint["class_variances"] = torch.diagonal(
+                    self._class_covs.detach().cpu(),
+                    dim1=-2,
+                    dim2=-1,
+                )
+            else:
+                checkpoint["class_covs"] = self._class_covs.detach().cpu()
 
         if hasattr(self, "task_sizes"):
             checkpoint["task_sizes"] = list(self.task_sizes)
+
+        if hasattr(self, "class_order"):
+            checkpoint["class_order"] = list(self.class_order)
 
         if hasattr(self, "radius"):
             radius = self.radius
@@ -293,6 +303,10 @@ class BaseLearner(object):
 
         if "class_covs" in checkpoint:
             self._class_covs = checkpoint["class_covs"].cpu()
+        elif "class_variances" in checkpoint:
+            self._class_covs = torch.diag_embed(
+                checkpoint["class_variances"].cpu()
+            )
 
         if "radius" in checkpoint:
             radius = checkpoint["radius"]
@@ -303,6 +317,9 @@ class BaseLearner(object):
 
         if "nme_curve" in checkpoint:
             self.nme_curve = checkpoint["nme_curve"]
+
+        if "class_order" in checkpoint:
+            self.class_order = list(checkpoint["class_order"])
 
         self._network = network.to(self._device)
         self._old_network = copy.deepcopy(self._network)

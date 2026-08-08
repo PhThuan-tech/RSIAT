@@ -14,6 +14,11 @@ from models.base import BaseLearner
 from utils.toolkit import count_parameters, log_count_parameter, target2onehot, tensor2numpy
 from utils.loss import AngularPenaltySMLoss
 from utils.toolkit import AutoencoderSigmoid
+from utils.research_losses import (
+    adaptive_topk_separation_loss,
+    moment_alignment_loss,
+)
+from models.projectors import build_projector
 import math
 num_workers = 8
 
@@ -38,13 +43,21 @@ class Learner(BaseLearner):
         self.task_sizes = []
         self.rs_loss_func = RS_Loss(self.args["alpha"], self.args["rs_margin"])
         self.old_ae = None
+        self.use_research_projector = (
+            self.args.get("model_name", "adapter").lower() == "umt_adapter"
+            or "projector_type" in self.args
+        )
+        self._loss_details = {}
 
     def _after_load_checkpoint(self, checkpoint):
         if self._cur_task >= 1:
-            self.old_ae = AutoencoderSigmoid(
-                input_dims=768,
-                code_dims=self.args["ae_code_dims"],
-            )
+            if self.use_research_projector:
+                self.old_ae = build_projector(self.args, input_dim=self.feature_dim)
+            else:
+                self.old_ae = AutoencoderSigmoid(
+                    input_dims=768,
+                    code_dims=self.args["ae_code_dims"],
+                )
             if "old_ae_state_dict" in checkpoint:
                 self.old_ae.load_state_dict(checkpoint["old_ae_state_dict"])
             else:
@@ -89,7 +102,12 @@ class Learner(BaseLearner):
     def incremental_train(self, data_manager):
         self._cur_task += 1
         
-        if self._cur_task == 1:
+        if self._cur_task > 0 and self.use_research_projector:
+            reset_projector = self.args.get("projector_reset_each_task", True)
+            if self.old_ae is None or reset_projector:
+                self.old_ae = build_projector(self.args, input_dim=self.feature_dim)
+            self.old_ae.to(self._device)
+        elif self._cur_task == 1:
             self.old_ae = AutoencoderSigmoid(input_dims=768, code_dims=self.args["ae_code_dims"])
             self.old_ae.to(self._device)
             
@@ -117,7 +135,8 @@ class Learner(BaseLearner):
             self._network = nn.DataParallel(self._network, self._multiple_gpus)
 
       
-        if self._cur_task >0:
+        use_projector_transport = self.args.get("prototype_transport", False)
+        if self._cur_task > 0 and not use_projector_transport:
             self._network.to(self._device)
             train_embeddings_old, _ = self.extract_features(self.train_loader, self._network, None)
 
@@ -127,13 +146,16 @@ class Learner(BaseLearner):
             self._network = self._network.module
 
       
-        if self._cur_task >0:
-            train_embeddings_new, _ = self.extract_features(self.train_loader, self._network, None)
-            old_class_mean = self._class_means[:self._known_classes]
-            gap = self.displacement(train_embeddings_old, train_embeddings_new, old_class_mean, 4.0)
-            if self.args['ssca'] is True:
-                old_class_mean +=gap
-                self._class_means[:self._known_classes] = old_class_mean
+        if self._cur_task > 0:
+            if use_projector_transport:
+                self._transport_old_statistics()
+            else:
+                train_embeddings_new, _ = self.extract_features(self.train_loader, self._network, None)
+                old_class_mean = self._class_means[:self._known_classes]
+                gap = self.displacement(train_embeddings_old, train_embeddings_new, old_class_mean, 4.0)
+                if self.args['ssca'] is True:
+                    old_class_mean +=gap
+                    self._class_means[:self._known_classes] = old_class_mean
 
         self._network.fc.backup()
         self._compute_class_mean(data_manager, check_diff=False, oracle=False)
@@ -157,7 +179,7 @@ class Learner(BaseLearner):
             if self.args['optimizer'] == 'sgd':
                 optimizer = optim.SGD(param_groups, momentum=0.9, lr=self.init_lr, weight_decay=self.weight_decay)
             elif self.args['optimizer'] == 'adam':
-                optimizer = optim.AdamW(self._network.parameters(), lr=self.init_lr, weight_decay=self.weight_decay)
+                optimizer = optim.AdamW(param_groups, lr=self.init_lr, weight_decay=self.weight_decay)
                 
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.tuned_epochs, eta_min=self.min_lr)
             log_count_parameter(param_groups)
@@ -170,12 +192,16 @@ class Learner(BaseLearner):
             param_groups.append(
                 {'params': self._network.fc.parameters(), 'lr': self.init_lr, 'weight_decay': self.weight_decay})
             param_groups.append(
-                {'params': self.old_ae.parameters(), 'lr': self.args['ae_init_lr'], 'weight_decay': self.args['ae_weight_decay']})
+                {
+                    'params': self.old_ae.parameters(),
+                    'lr': self.args.get('projector_lr', self.args['ae_init_lr']),
+                    'weight_decay': self.args.get('projector_weight_decay', self.args['ae_weight_decay']),
+                })
             
             if self.args['optimizer'] == 'sgd':
                 optimizer = optim.SGD(param_groups, momentum=0.9)
             elif self.args['optimizer'] == 'adam':
-                optimizer = optim.AdamW(self._network.parameters(), lr=self.init_lr, weight_decay=self.weight_decay)
+                optimizer = optim.AdamW(param_groups, lr=self.init_lr, weight_decay=self.weight_decay)
 
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.tuned_epochs, eta_min=self.min_lr)
             log_count_parameter(param_groups)
@@ -189,6 +215,7 @@ class Learner(BaseLearner):
             self._network.train()
             losses = 0.0
             losses_c, losses_rt = 0.0, 0.0
+            detail_sums = {}
             correct, total = 0, 0
 
             for i, (_, inputs, targets) in enumerate(train_loader):
@@ -201,6 +228,8 @@ class Learner(BaseLearner):
                 losses += loss.item()
                 losses_c += loss_c.item()
                 losses_rt += loss_rt.item()
+                for name, value in self._loss_details.items():
+                    detail_sums[name] = detail_sums.get(name, 0.0) + float(value)
                 _, preds = torch.max(logits, dim=1)
                 correct += preds.eq(targets.expand_as(preds)).cpu().sum()
                 total += len(targets)
@@ -223,10 +252,19 @@ class Learner(BaseLearner):
                 train_acc,
                 test_acc_msg,
             )
+            if detail_sums:
+                details = ", ".join(
+                    "{} {:.4f}".format(name, value / len(train_loader))
+                    for name, value in sorted(detail_sums.items())
+                )
+                info += ", " + details
             prog_bar.set_description(info)
         logging.info(info)
 
     def _inc_loss(self, features, features_old):
+        if self.use_research_projector:
+            return self._research_inc_loss(features, features_old)
+
         features_old = self.old_ae(features_old)
         loss_align = nn.MSELoss()(features, features_old)
         features_old_norm = F.normalize(features_old, p=2, dim=1)
@@ -236,6 +274,99 @@ class Learner(BaseLearner):
         similarity = torch.matmul(protos, features_old_norm.t())
         loss_orth = similarity.sum() / (similarity.shape[0]*similarity.shape[1])
         return self.args["beta"] * loss_align + self.args["gamma"] * loss_orth
+
+    def _research_inc_loss(self, features, features_old):
+        projected_old = self.old_ae(features_old)
+        loss_point = F.mse_loss(projected_old, features)
+        loss_mean, loss_variance = moment_alignment_loss(
+            features,
+            projected_old,
+            labels=getattr(self, "_current_targets", None),
+            classwise=self.args.get("moment_classwise", True),
+        )
+
+        old_prototypes = torch.from_numpy(
+            self._class_means[:self._known_classes]
+        ).float().to(self._device, non_blocking=True)
+        projected_prototypes = self.old_ae(old_prototypes)
+        loss_separation, separation_diagnostics = adaptive_topk_separation_loss(
+            features,
+            projected_prototypes.detach(),
+            topk=self.args.get("separation_topk", 10),
+            threshold_min=self.args.get("separation_threshold_min", 0.1),
+            threshold_max=self.args.get("separation_threshold_max", 0.5),
+            reference_features=features_old,
+            reference_prototypes=old_prototypes,
+        )
+
+        if hasattr(self.old_ae, "regularization_loss"):
+            loss_complexity = self.old_ae.regularization_loss()
+        else:
+            loss_complexity = features.sum() * 0.0
+
+        loss = (
+            self.args.get("point_weight", self.args.get("beta", 1.0)) * loss_point
+            + self.args.get("mean_weight", 0.1) * loss_mean
+            + self.args.get("variance_weight", 0.01) * loss_variance
+            + self.args.get("separation_weight", self.args.get("gamma", 1.0)) * loss_separation
+            + self.args.get("complexity_weight", 0.0) * loss_complexity
+        )
+        self._loss_details = {
+            "point": loss_point.detach().item(),
+            "mean": loss_mean.detach().item(),
+            "variance": loss_variance.detach().item(),
+            "separation": loss_separation.detach().item(),
+            "complexity": loss_complexity.detach().item(),
+            "topk_sim": separation_diagnostics["topk_similarity"].item(),
+            "active_sep": separation_diagnostics["active_fraction"].item(),
+        }
+        return loss
+
+    @torch.no_grad()
+    def _transport_old_statistics(self):
+        """Move old class statistics into the current feature space."""
+        if self._known_classes == 0:
+            return
+
+        was_training = self.old_ae.training
+        self.old_ae.eval()
+        mode = self.args.get("statistics_transport", "mean_only").lower()
+        means = torch.from_numpy(
+            self._class_means[:self._known_classes]
+        ).float().to(self._device)
+
+        if mode == "mean_only":
+            transported_means = self.old_ae(means).cpu().numpy()
+            self._class_means[:self._known_classes] = transported_means
+        elif mode == "diagonal_mc":
+            sample_count = int(self.args.get("statistics_transport_samples", 128))
+            epsilon = float(self.args.get("statistics_epsilon", 1e-4))
+            transported_means = []
+            transported_covariances = self._class_covs[:self._known_classes].clone()
+            for class_id in range(self._known_classes):
+                class_mean = means[class_id]
+                class_covariance = self._class_covs[class_id]
+                class_std = torch.diagonal(class_covariance).clamp_min(epsilon).sqrt().to(self._device)
+                samples = class_mean.unsqueeze(0) + torch.randn(
+                    sample_count,
+                    self.feature_dim,
+                    device=self._device,
+                ) * class_std.unsqueeze(0)
+                projected_samples = self.old_ae(samples)
+                projected_mean = projected_samples.mean(dim=0)
+                projected_variance = projected_samples.var(dim=0, unbiased=False).clamp_min(epsilon)
+                transported_means.append(projected_mean.cpu())
+                transported_covariances[class_id] = torch.diag(projected_variance.cpu())
+
+            self._class_means[:self._known_classes] = torch.stack(
+                transported_means
+            ).numpy()
+            self._class_covs[:self._known_classes] = transported_covariances
+        else:
+            raise ValueError("Unknown statistics_transport: {}".format(mode))
+
+        if was_training:
+            self.old_ae.train()
         
     def _compute_rt_loss(self, inputs, targets, epoch=None, warmup_epoch=10):     
         loss_cos=AngularPenaltySMLoss(loss_type='cosface', eps=1e-7, s=self.args["scale"], m=self.args["margin"])
@@ -244,11 +375,13 @@ class Learner(BaseLearner):
         loss_c=loss_cos(logits[:, self._known_classes:], targets - self._known_classes)
 
         if self._cur_task == 0:
+            self._loss_details = {}
             lambda_rs = self.args["lambda_rs"] * min(1.0, epoch / warmup_epoch)
             loss_base = lambda_rs * self.rs_loss_func(features, targets)
             return logits, loss_c, loss_base
         
         features_old = self.old_network_module_ptr.extract_vector(inputs)
+        self._current_targets = targets
         loss_inc = self._inc_loss(features, features_old)
         return logits, loss_c, loss_inc
     

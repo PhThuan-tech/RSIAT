@@ -10,6 +10,7 @@ from data.data_manager import DataManager
 from utils.toolkit import count_parameters
 import os
 import random
+import numpy as np
 
 
 def RSIAT_train(args):
@@ -129,30 +130,38 @@ def complete_curve_from_log(cnn_curve, log_path, completed_task, init_cls, incre
 def _train(args):
 
     init_cls = 0 if args ["init_cls"] == args["increment"] else args["init_cls"]
-    logs_name = "logs/{}/{}/{}/{}".format(args["model_name"],args["dataset"], init_cls, args['increment'])
+    output_root = args.get("output_root", "")
+    logs_root = os.path.join(output_root, "logs")
+    logs_name = os.path.join(
+        logs_root,
+        str(args["model_name"]),
+        str(args["dataset"]),
+        str(init_cls),
+        str(args["increment"]),
+    )
     
     if not os.path.exists(logs_name):
         os.makedirs(logs_name)
 
-    logfilename = "logs/{}/{}/{}/{}/{}_{}_{}".format(
-        args["model_name"],
-        args["dataset"],
-        init_cls,
-        args["increment"],
-        args["prefix"],
-        args["seed"],
-        args["convnet_type"],
+    logfilename = os.path.join(
+        logs_name,
+        "{}_{}_{}".format(
+            args["prefix"],
+            args["seed"],
+            args["convnet_type"],
+        ),
     )
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(filename)s] => %(message)s",
+        force=True,
         handlers=[
             logging.FileHandler(filename=logfilename + ".log"),
             logging.StreamHandler(sys.stdout),
         ],
     )
 
-    _set_random()
+    _set_random(args["seed"])
     _set_device(args)
     print_args(args)
     data_manager = DataManager(
@@ -163,13 +172,17 @@ def _train(args):
         args["increment"],
     )
     model = model_factory.get_model(args["model_name"], args)
+    model.class_order = list(data_manager._class_order)
 
     checkpoint_dir = os.path.join(
+        output_root,
         "ckpt",
         str(args["prefix"]),
         str(args["dataset"]),
         "{}_{}".format(args["init_cls"], args["increment"]),
     )
+    if args.get("isolate_runs", args.get("model_name") == "umt_adapter"):
+        checkpoint_dir = os.path.join(checkpoint_dir, "seed_{}".format(args["seed"]))
 
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -244,6 +257,15 @@ def _train(args):
 
         model.save_checkpoint(checkpoint_path)
 
+        if args.get("keep_last_checkpoint", False) and task > 0:
+            previous_checkpoint = os.path.join(
+                checkpoint_dir,
+                "task_{}.pkl".format(task - 1),
+            )
+            if os.path.isfile(previous_checkpoint):
+                os.remove(previous_checkpoint)
+                logging.info("Removed superseded checkpoint: %s", previous_checkpoint)
+
 
         logging.info("CNN top1 curve: {}".format(cnn_curve["top1"]))
         logging.info("CNN top5 curve: {}".format(cnn_curve["top5"]))
@@ -267,10 +289,12 @@ def _set_device(args):
     args["device"] = gpus
 
 
-def _set_random():
-    torch.manual_seed(1)
-    torch.cuda.manual_seed(1)
-    torch.cuda.manual_seed_all(1)
+def _set_random(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
