@@ -5,14 +5,12 @@
 import math
 import torch
 import torch.nn as nn
-from timm.models.layers import DropPath
+from timm.layers import DropPath, PatchEmbed
 import timm
 from functools import partial
 from collections import OrderedDict
 import torch
 import torch.nn as nn
-from timm.models.vision_transformer import PatchEmbed
-from timm.models import register_model
 
 
 from collections import OrderedDict
@@ -303,11 +301,31 @@ class VisionTransformer(nn.Module):
         return x
 
 
+def _create_timm_vit(pretrained_domain):
+    if pretrained_domain == "in21k":
+        candidates = [
+            "vit_base_patch16_224.augreg_in21k",
+            "vit_base_patch16_224_in21k",
+        ]
+    else:
+        candidates = ["vit_base_patch16_224"]
+
+    errors = []
+    for model_name in candidates:
+        try:
+            return timm.create_model(model_name, pretrained=True, num_classes=0)
+        except (RuntimeError, ValueError) as error:
+            errors.append("{}: {}".format(model_name, error))
+    raise RuntimeError(
+        "Unable to create a pretrained ViT. Tried: {}".format(" | ".join(errors))
+    )
+
+
 def vit_base_patch16_224_adapter(pretrained=False, **kwargs):
     model = VisionTransformer(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                               norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
 
-    checkpoint_model = timm.create_model("vit_base_patch16_224", pretrained=True, num_classes=0)
+    checkpoint_model = _create_timm_vit("in1k")
     state_dict = checkpoint_model.state_dict()
     for key in list(state_dict.keys()):
         if 'qkv.weight' in key:
@@ -345,7 +363,7 @@ def vit_base_patch16_224_in21k_adapter(pretrained=False, **kwargs):
     model = VisionTransformer(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                               norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
 
-    checkpoint_model = timm.create_model("vit_base_patch16_224_in21k", pretrained=True, num_classes=0)
+    checkpoint_model = _create_timm_vit("in21k")
     state_dict = checkpoint_model.state_dict()
     for key in list(state_dict.keys()):
         if 'qkv.weight' in key:

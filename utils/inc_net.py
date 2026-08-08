@@ -6,15 +6,30 @@ from network.classifier import  CosineLinear, SimpleContinualLinear
 import timm
 
 
+def _create_timm_backbone(candidates):
+    errors = []
+    for model_name in candidates:
+        try:
+            return timm.create_model(model_name, pretrained=True, num_classes=0)
+        except (RuntimeError, ValueError) as error:
+            errors.append("{}: {}".format(model_name, error))
+    raise RuntimeError(
+        "Unable to create a pretrained backbone. Tried: {}".format(" | ".join(errors))
+    )
+
+
 def get_convnet(args, pretrained=False):
     name = args["convnet_type"].lower()
     # SimpleCIL or SimpleCIL w/ Finetune
     if name == "pretrained_vit_b16_224" or name == "vit_base_patch16_224":
-        model = timm.create_model("vit_base_patch16_224", pretrained=True, num_classes=0)
+        model = _create_timm_backbone(["vit_base_patch16_224"])
         model.out_dim = 768
         return model.eval()
     elif name == "pretrained_vit_b16_224_in21k" or name == "vit_base_patch16_224_in21k":
-        model = timm.create_model("vit_base_patch16_224_in21k", pretrained=True, num_classes=0)
+        model = _create_timm_backbone([
+            "vit_base_patch16_224.augreg_in21k",
+            "vit_base_patch16_224_in21k",
+        ])
         model.out_dim = 768
         return model.eval()
 

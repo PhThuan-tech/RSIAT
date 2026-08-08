@@ -38,6 +38,10 @@ Then install the remaining dependencies:
 pip install -r requirements.txt
 ```
 
+The repository uses `timm>=1.0` APIs and pins a Python 3.12-compatible timm
+release so it can run on current Google Colab runtimes. Older environments that
+still have `timm==0.6.12` must upgrade it before importing the model modules.
+
 Optional GPU check:
 
 ```bash
@@ -205,6 +209,9 @@ A ready-to-run Google Colab workflow is available in
 The optional `output_root` config key redirects `logs/` and `ckpt/` to another
 location; the Colab notebook uses it to persist outputs on Google Drive while
 training from Colab's faster local disk.
+The notebook also links `data/datasets` to
+`MyDrive/RSIAT_data/datasets`, so CIFAR-100 is downloaded only once and reused
+after Colab runtime resets.
 
 The smoke config uses fewer epochs and a smaller batch size, so it is useful for checking that the environment, CUDA, model loading, and data pipeline work before running the full reproduction.
 
