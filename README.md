@@ -177,7 +177,7 @@ python -m unittest tests.test_research_components
 python main.py --config ./exps/umt_adapter_cifar224_smoke.json
 ```
 
-Run the three-order CIFAR-100 experiment with:
+Run the CIFAR-100 experiment for seed 1993 with automatic task-level resume:
 
 ```bash
 python main.py --config ./exps/umt_adapter_cifar224.json

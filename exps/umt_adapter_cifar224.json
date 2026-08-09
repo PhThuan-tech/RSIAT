@@ -1,7 +1,7 @@
 {
     "prefix": "umt_weak_moment_topk",
     "dataset": "cifar224",
-    "resume": false,
+    "resume": true,
     "isolate_runs": true,
     "keep_last_checkpoint": true,
     "compact_diagonal_checkpoint": true,
@@ -13,7 +13,7 @@
     "model_name": "umt_adapter",
     "convnet_type": "pretrained_vit_b16_224_in21k_adapter",
     "device": ["0"],
-    "seed": [1993, 2024, 3407],
+    "seed": [1993],
 
     "init_epochs": 10,
     "warmup_epoch": 7,
