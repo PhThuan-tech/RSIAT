@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Stability plasticity và forgetting của UMT-RSIAT</title>
+  <desc id="desc">UMT-RSIAT tăng new-class accuracy nhưng giảm old-class accuracy và có group forgetting cao hơn RSIAT trên seed 1993.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071426"/><stop offset="1" stop-color="#10223f"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#020617" flood-opacity="0.45"/></filter>
+    <style>
+      .title{font:700 32px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}.sub{font:400 16px Inter,Segoe UI,Arial,sans-serif;fill:#94a3b8}
+      .panel{font:700 21px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}.axis{font:500 14px Inter,Segoe UI,Arial,sans-serif;fill:#cbd5e1}
+      .value{font:700 20px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}.insight{font:600 18px Inter,Segoe UI,Arial,sans-serif;fill:#e2e8f0}
+      .grid{stroke:#334155;stroke-width:1}.umt{fill:#38bdf8}.base{fill:#a78bfa}.danger{fill:#fb7185}.good{fill:#2dd4bf}
+    </style>
+  </defs>
+  <rect width="1400" height="760" rx="26" fill="url(#bg)"/>
+  <text x="70" y="58" class="title">UMT tăng plasticity nhưng đánh đổi stability</text>
+  <text x="70" y="87" class="sub">Trung bình task 1–9 và group forgetting tại task 9 · CIFAR-100 B0I10 · seed 1993</text>
+
+  <rect x="55" y="120" width="825" height="500" rx="22" fill="#0f1d35" stroke="#334155" filter="url(#shadow)"/>
+  <text x="85" y="158" class="panel">Old/New accuracy trung bình (%)</text>
+  <!-- y 90..98 maps 550..190 -->
+  <line x1="120" y1="190" x2="835" y2="190" class="grid"/><line x1="120" y1="280" x2="835" y2="280" class="grid"/>
+  <line x1="120" y1="370" x2="835" y2="370" class="grid"/><line x1="120" y1="460" x2="835" y2="460" class="grid"/><line x1="120" y1="550" x2="835" y2="550" class="grid"/>
+  <g class="axis" text-anchor="end"><text x="108" y="195">98</text><text x="108" y="285">96</text><text x="108" y="375">94</text><text x="108" y="465">92</text><text x="108" y="555">90</text></g>
+  <!-- Old: UMT 93.609 y387.6, base94.660 y340.3. New: UMT96.233 y269.5, base94.544 y345.5 -->
+  <rect x="220" y="387.6" width="105" height="162.4" rx="9" class="umt"/><rect x="340" y="340.3" width="105" height="209.7" rx="9" class="base"/>
+  <rect x="560" y="269.5" width="105" height="280.5" rx="9" class="umt"/><rect x="680" y="345.5" width="105" height="204.5" rx="9" class="base"/>
+  <text x="272" y="375" class="value" text-anchor="middle">93.609</text><text x="392" y="328" class="value" text-anchor="middle">94.660</text>
+  <text x="612" y="257" class="value" text-anchor="middle">96.233</text><text x="732" y="333" class="value" text-anchor="middle">94.544</text>
+  <text x="332" y="585" class="panel" text-anchor="middle">Old classes</text><text x="672" y="585" class="panel" text-anchor="middle">New classes</text>
+  <rect x="165" y="185" width="245" height="42" rx="12" fill="#4c0519"/><text x="287" y="212" class="value" text-anchor="middle">UMT old: −1.051</text>
+  <rect x="500" y="185" width="245" height="42" rx="12" fill="#042f2e"/><text x="622" y="212" class="value" text-anchor="middle">UMT new: +1.689</text>
+
+  <rect x="910" y="120" width="435" height="500" rx="22" fill="#0f1d35" stroke="#334155" filter="url(#shadow)"/>
+  <text x="940" y="158" class="panel">Average group forgetting</text>
+  <text x="940" y="184" class="sub">max accuracy trước đó − accuracy cuối</text>
+  <!-- y 0..6 maps 550..220 -->
+  <line x1="965" y1="220" x2="1310" y2="220" class="grid"/><line x1="965" y1="330" x2="1310" y2="330" class="grid"/><line x1="965" y1="440" x2="1310" y2="440" class="grid"/><line x1="965" y1="550" x2="1310" y2="550" class="grid"/>
+  <g class="axis" text-anchor="end"><text x="953" y="225">6</text><text x="953" y="335">4</text><text x="953" y="445">2</text><text x="953" y="555">0</text></g>
+  <rect x="1015" y="238.2" width="105" height="311.8" rx="9" class="danger"/><rect x="1170" y="367.4" width="105" height="182.6" rx="9" class="base"/>
+  <text x="1067" y="226" class="value" text-anchor="middle">5.67</text><text x="1222" y="355" class="value" text-anchor="middle">3.32</text>
+  <text x="1067" y="585" class="axis" text-anchor="middle">UMT-RSIAT</text><text x="1222" y="585" class="axis" text-anchor="middle">RSIAT</text>
+
+  <rect x="55" y="650" width="1290" height="74" rx="18" fill="#111d35" stroke="#475569"/>
+  <circle cx="92" cy="687" r="12" class="good"/><text x="118" y="693" class="insight">New classes: UMT tốt hơn ở 9/9 task</text>
+  <circle cx="510" cy="687" r="12" class="danger"/><text x="536" y="693" class="insight">Old classes: UMT thấp hơn ở 9/9 task</text>
+  <text x="1310" y="693" class="insight" text-anchor="end">Kết luận: cần tăng stability trước khi chạy thêm seed</text>
+</svg>

@@ -233,7 +233,19 @@ def _train(args):
         logging.info("All tasks already completed, but no CNN curve was found.")
         return 0.0
 
-    for task in range(start_task, data_manager.nb_tasks):
+    end_task = data_manager.nb_tasks
+    max_tasks_per_run = args.get("max_tasks_per_run")
+    if max_tasks_per_run is not None:
+        max_tasks_per_run = max(1, int(max_tasks_per_run))
+        end_task = min(end_task, start_task + max_tasks_per_run)
+        logging.info(
+            "This run will process tasks [%d, %d) out of %d tasks.",
+            start_task,
+            end_task,
+            data_manager.nb_tasks,
+        )
+
+    for task in range(start_task, end_task):
         logging.info("All params: {}".format(count_parameters(model._network)))
         logging.info(
             "Trainable params: {}".format(count_parameters(model._network, True))
@@ -272,6 +284,15 @@ def _train(args):
 
         print('Average Accuracy (CNN):', sum(cnn_curve["top1"])/len(cnn_curve["top1"]))
         logging.info("Average Accuracy (CNN): {}".format(sum(cnn_curve["top1"])/len(cnn_curve["top1"])))
+
+    if end_task < data_manager.nb_tasks:
+        logging.info(
+            "Stopped cleanly after %d task(s) because max_tasks_per_run=%d. "
+            "Resume the same seed to continue at task %d.",
+            end_task - start_task,
+            max_tasks_per_run,
+            end_task,
+        )
     return sum(cnn_curve["top1"])/len(cnn_curve["top1"])
        
 def _set_device(args):

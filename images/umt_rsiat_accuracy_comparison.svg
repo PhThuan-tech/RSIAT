@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">So sánh top-1 UMT-RSIAT và RSIAT theo task</title>
+  <desc id="desc">Biểu đồ đường accuracy top-1 trên CIFAR-100 B0I10, seed 1993. UMT-RSIAT đạt 91.41 phần trăm và RSIAT đạt 92.17 phần trăm ở task cuối.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071426"/><stop offset="1" stop-color="#10223f"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#020617" flood-opacity="0.4"/></filter>
+    <style>
+      .title{font:700 32px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}.sub{font:400 16px Inter,Segoe UI,Arial,sans-serif;fill:#94a3b8}
+      .axis{font:500 14px Inter,Segoe UI,Arial,sans-serif;fill:#cbd5e1}.label{font:700 15px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}
+      .cardN{font:700 30px Inter,Segoe UI,Arial,sans-serif;fill:#f8fafc}.cardL{font:500 13px Inter,Segoe UI,Arial,sans-serif;fill:#cbd5e1}
+      .grid{stroke:#334155;stroke-width:1}.umt{stroke:#38bdf8;fill:none;stroke-width:5}.base{stroke:#a78bfa;fill:none;stroke-width:5}
+    </style>
+  </defs>
+  <rect width="1400" height="760" rx="26" fill="url(#bg)"/>
+  <text x="70" y="58" class="title">Top-1 accuracy theo incremental task</text>
+  <text x="70" y="87" class="sub">CIFAR-100 · B0I10 · ViT-B/16 IN21K · seed/class order 1993 · một seed</text>
+
+  <rect x="930" y="30" width="126" height="70" rx="14" fill="#0c4a6e" filter="url(#shadow)"/>
+  <text x="993" y="61" class="cardN" text-anchor="middle">91.41</text><text x="993" y="84" class="cardL" text-anchor="middle">UMT final</text>
+  <rect x="1070" y="30" width="126" height="70" rx="14" fill="#4c1d95" filter="url(#shadow)"/>
+  <text x="1133" y="61" class="cardN" text-anchor="middle">92.17</text><text x="1133" y="84" class="cardL" text-anchor="middle">RSIAT final</text>
+  <rect x="1210" y="30" width="126" height="70" rx="14" fill="#7f1d1d" filter="url(#shadow)"/>
+  <text x="1273" y="61" class="cardN" text-anchor="middle">−0.76</text><text x="1273" y="84" class="cardL" text-anchor="middle">final gap</text>
+
+  <!-- plot: x=140..1280, y=120..640 maps 100..90 -->
+  <line x1="140" y1="120" x2="1280" y2="120" class="grid"/><line x1="140" y1="224" x2="1280" y2="224" class="grid"/>
+  <line x1="140" y1="328" x2="1280" y2="328" class="grid"/><line x1="140" y1="432" x2="1280" y2="432" class="grid"/>
+  <line x1="140" y1="536" x2="1280" y2="536" class="grid"/><line x1="140" y1="640" x2="1280" y2="640" class="grid"/>
+  <text x="112" y="125" class="axis">100</text><text x="120" y="229" class="axis">98</text><text x="120" y="333" class="axis">96</text>
+  <text x="120" y="437" class="axis">94</text><text x="120" y="541" class="axis">92</text><text x="120" y="645" class="axis">90</text>
+  <text x="46" y="385" class="axis" transform="rotate(-90 46 385)">Top-1 accuracy (%)</text>
+
+  <polyline class="base" points="140,172 267,244.8 393,281.2 520,318.6 647,368.6 773,415.4 900,426.8 1027,505.8 1153,517.3 1280,527.2"/>
+  <polyline class="umt" points="140,172 267,260.4 393,307.2 520,348.8 647,402.9 773,450.2 900,451.2 1027,531.8 1153,552.1 1280,566.7"/>
+
+  <g fill="#a78bfa" stroke="#ede9fe" stroke-width="2">
+    <circle cx="140" cy="172" r="6"/><circle cx="267" cy="244.8" r="6"/><circle cx="393" cy="281.2" r="6"/><circle cx="520" cy="318.6" r="6"/><circle cx="647" cy="368.6" r="6"/><circle cx="773" cy="415.4" r="6"/><circle cx="900" cy="426.8" r="6"/><circle cx="1027" cy="505.8" r="6"/><circle cx="1153" cy="517.3" r="6"/><circle cx="1280" cy="527.2" r="6"/>
+  </g>
+  <g fill="#38bdf8" stroke="#e0f2fe" stroke-width="2">
+    <circle cx="140" cy="172" r="6"/><circle cx="267" cy="260.4" r="6"/><circle cx="393" cy="307.2" r="6"/><circle cx="520" cy="348.8" r="6"/><circle cx="647" cy="402.9" r="6"/><circle cx="773" cy="450.2" r="6"/><circle cx="900" cy="451.2" r="6"/><circle cx="1027" cy="531.8" r="6"/><circle cx="1153" cy="552.1" r="6"/><circle cx="1280" cy="566.7" r="6"/>
+  </g>
+
+  <g class="axis" text-anchor="middle"><text x="140" y="674">0</text><text x="267" y="674">1</text><text x="393" y="674">2</text><text x="520" y="674">3</text><text x="647" y="674">4</text><text x="773" y="674">5</text><text x="900" y="674">6</text><text x="1027" y="674">7</text><text x="1153" y="674">8</text><text x="1280" y="674">9</text></g>
+  <text x="710" y="710" class="axis" text-anchor="middle">Task ID (10 lớp mới mỗi task)</text>
+
+  <line x1="150" y1="727" x2="195" y2="727" class="umt"/><text x="208" y="733" class="label">UMT-RSIAT</text>
+  <line x1="350" y1="727" x2="395" y2="727" class="base"/><text x="408" y="733" class="label">RSIAT gốc</text>
+  <text x="1280" y="733" class="sub" text-anchor="end">Average incremental: 94.532 vs 95.043 (−0.511)</text>
+</svg>

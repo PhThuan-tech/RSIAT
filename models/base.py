@@ -465,7 +465,7 @@ class BaseLearner(object):
                 idx_dataset,
                 batch_size=batch_size,
                 shuffle=False,
-                num_workers=4,
+                num_workers=int(self.args.get("stats_num_workers", 4)),
             )
             vectors, _ = self._extract_vectors(idx_loader)
             class_mean = np.mean(vectors, axis=0)

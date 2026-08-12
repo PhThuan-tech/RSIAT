@@ -29,6 +29,7 @@ class Learner(BaseLearner):
             raise NotImplementedError('Adapter requires Adapter backbone')
         self._network = SimpleVitNet(args, True)
         self.batch_size = args["batch_size"]
+        self.num_workers = int(args.get("num_workers", num_workers))
         self.init_lr = args["init_lr"]
 
         self.weight_decay = args["weight_decay"] if args["weight_decay"] is not None else 0.0005
@@ -126,9 +127,19 @@ class Learner(BaseLearner):
         print("The number of training dataset:", len(self.train_dataset))
 
         self.data_manager = data_manager
-        self.train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=8)
+        self.train_loader = DataLoader(
+            train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
         test_dataset = data_manager.get_dataset(np.arange(0, self._total_classes), source="test", mode="test")
-        self.test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8)
+        self.test_loader = DataLoader(
+            test_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
 
         if len(self._multiple_gpus) > 1:
             print('Multiple GPUs')
